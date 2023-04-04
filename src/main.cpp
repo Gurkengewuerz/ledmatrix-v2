@@ -15,6 +15,8 @@
 #include <WiFiUdp.h>
 #include <Wire.h>
 
+#include "gitHeader.h"
+
 #define USB_SERIAL Serial
 
 WebSocketsServer webSocket = WebSocketsServer(81);
@@ -142,6 +144,10 @@ void setup() {
     USB_SERIAL.begin(115200);
 
     Wire.begin(5, 4);
+
+    char debugBuffer[512];
+    sprintf(debugBuffer, "# Compiled with c++ version %s\r\n# Version %s %s at %s", __VERSION__, GIT_COMMIT, __DATE__, __TIME__);
+    USB_SERIAL.println(debugBuffer);
 
     WiFiManager wifiManager;
     WiFiManagerParameter config_led_rows("led_rows", "Pixel Rows", "25", 3);
