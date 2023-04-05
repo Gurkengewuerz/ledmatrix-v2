@@ -28,5 +28,5 @@ jobs:
       run: platformio run --environment ${{ matrix.environment }}
     - uses: actions/upload-artifact@v3
       with:
-        name: firmware-${{ matrix.environment }}-${{ matrix.backend }}
+        name: firmware-${{ matrix.environment }}
         path: ./build_output/firmware/
