@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LED Table</title>
+    <script type="text/javascript" src="data/js/jquery-3.2.1.min.js"></script>
+    <script
+      src="data/js/bootstrap.bundle.min.js"
+      type="text/javascript"
+    ></script>
+    <script type="text/javascript" src="data/js/d3.js"></script>
+    <script type="text/javascript" src="data/js/RXB.js"></script>
+    <script type="text/javascript" src="data/js/main.js"></script>
+    <link rel="stylesheet" type="text/css" href="data/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="data/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-8">
+          <h1>LED-Matrix-Control</h1>
+        </div>
+        <div class="col-sm-4"></div>
+      </div>
+      <div class="row">
+        <div class="col-sm-8">
+          <h2>Color Picker</h2>
+          <div class="col-sm-6 col-sm-offset-3 text-center">
+            <div id="picker"></div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="row">
+            <div class="col-sm-12">
+              <h2>Animations</h2>
+              <select
+                class="form-select"
+                id="animations"
+                aria-label="Animations"
+              ></select>
+            </div>
+            <div class="col-sm-12">
+              <h2>Brightness</h2>
+              <div class="range">
+                <input
+                  type="range"
+                  name="range"
+                  id="brightness"
+                  min="0"
+                  max="100"
+                  value="50"
+                  onchange="range.value=value"
+                />
+                <output id="range">50</output>
+              </div>
+            </div>
+            <div class="col-sm-12">
+              <h2>Clock Speed</h2>
+              <div class="range">
+                <input
+                  type="range"
+                  name="speedrange"
+                  id="clockspeed"
+                  min="0"
+                  max="250"
+                  value="50"
+                  onchange="speedrange.value=value"
+                />
+                <output id="speedrange">50</output>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      $(document).ready(function () {
+        let connection = new WebSocket("ws://192.168.25.166:81");
+        let knownAnimations = [];
+
+        connection.onopen = function () {
+          console.log("Verbindung geöffnet");
+          keepAlive();
+
+          ["display", "clock", "animations", "animation"].forEach(
+            (cmd, index) => {
+              setTimeout(
+                () =>
+                  connection.send(
+                    JSON.stringify({
+                      event: cmd,
+                      data: {},
+                    })
+                  ),
+                50 * index
+              );
+            }
+          );
+        };
+
+        // Log errors
+        connection.onerror = function (error) {
+          console.log("WebSocket Error " + error);
+        };
+
+        // Log messages from the server
+        connection.onmessage = function (e) {
+          console.log("Server: " + e.data);
+
+          try {
+            const response = JSON.parse(e.data);
+
+            switch (response["event"]) {
+              case "animations":
+                knownAnimations = response["data"];
+                setAnimations(knownAnimations, "");
+                break;
+              case "animation":
+                setAnimations(knownAnimations, response["data"]["name"]);
+                break;
+              case "display":
+                const displayDat = response["data"];
+                $("#brightness").val(
+                  parseInt((displayDat["brightness"] / 255.0) * 100)
+                );
+                $("#brightness").trigger("change");
+                break;
+              case "clock":
+                const clockDat = response["data"];
+                $("#clockspeed").val(clockDat["tps"]);
+                $("#clockspeed").trigger("change");
+                break;
+            }
+          } catch (e) {}
+        };
+
+        let timerId = 0;
+
+        const keepAlive = (timeout = 5000) => {
+          if (connection.readyState == connection.OPEN) {
+            connection.send(JSON.stringify({ event: "ping", data: true }));
+          }
+          timerId = setTimeout(keepAlive, timeout);
+        };
+
+        const cancelKeepAlive = () => {
+          if (timerId) {
+            clearTimeout(timerId);
+          }
+        };
+
+        const setAnimations = (animations, selected) => {
+          const elm = $("#animations");
+          elm.html("");
+          elm.append(new Option("", ""));
+          animations.forEach((anim) => {
+            const opt = new Option(anim, anim);
+            if (anim === selected) opt.setAttribute("selected", "selected");
+            elm.append(opt);
+          });
+        };
+
+        $("#animations").on("change", () => {
+          connection.send(
+            JSON.stringify({
+              event: "animation",
+              data: {
+                name: $("#animations option:selected").val(),
+              },
+            })
+          );
+        });
+
+        $(document).on("input", "#brightness", function () {
+          const brightness = $(this).val();
+
+          connection.send(
+            JSON.stringify({
+              event: "display",
+              data: {
+                brightness: parseInt((brightness / 100) * 255),
+              },
+            })
+          );
+        });
+
+        $(document).on("input", "#clockspeed", function () {
+          connection.send(
+            JSON.stringify({
+              event: "clock",
+              data: {
+                tps: $(this).val(),
+              },
+            })
+          );
+        });
+
+        pickerCallback = (color) => {
+          connection.send(
+            JSON.stringify({
+              event: "display",
+              data: {
+                color,
+              },
+            })
+          );
+        };
+      });
+    </script>
+  </body>
+</html>
