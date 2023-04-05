@@ -70,6 +70,11 @@
                 <output id="speedrange">50</output>
               </div>
             </div>
+            <div class="col-sm-12">
+              <button type="button" class="btn btn-light w-100 my-4" id="saveSettings">
+                Save Settings
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -168,6 +173,15 @@
               data: {
                 name: $("#animations option:selected").val(),
               },
+            })
+          );
+        });
+
+        $("#saveSettings").on("click", () => {
+          connection.send(
+            JSON.stringify({
+              event: "saveSettings",
+              data: {},
             })
           );
         });

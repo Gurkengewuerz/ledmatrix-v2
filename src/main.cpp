@@ -8,7 +8,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <Clock.h>
-#include <ESPmDNS.h>
+#include <EEPROM.h>
 #include <WS281X.h>
 #include <WebSocketsServer.h>
 #include <WiFi.h>
@@ -19,6 +19,7 @@
 #include "gitHeader.h"
 
 #define USB_SERIAL Serial
+#define SEETINGS_VERSION 0x69
 
 WebSocketsServer webSocket = WebSocketsServer(81);
 ACS712 currentSensor(2, 3.3, 4095, 185);  // 0.100 for 20A version. 0.185 for 5A and 0.066 for 30A. Value in Volts per Ampere
@@ -29,6 +30,17 @@ Animation* currentAnimation = nullptr;
 
 const size_t MAX_ANIMATIONS = 25;
 Animation** animations = new Animation*[MAX_ANIMATIONS];
+
+struct SettingsStruct {
+    uint16_t version;
+    char acitveAnimation[33];
+    float clockTPS;
+    uint8_t brightness;
+    uint8_t maxBrightness;
+    RgbColor staticColor;
+};
+
+const char* settingsPath = "/settings.bin";
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) {
     switch (type) {
@@ -132,6 +144,22 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
 
                 JsonObject responseData = response.createNestedObject("data");
                 responseData["name"] = currentAnimation == nullptr ? nullptr : currentAnimation->getName();
+            } else if (type.equals("saveSettings")) {
+                response["event"] = type;
+
+                SettingsStruct settings = {};
+                settings.version = SEETINGS_VERSION;
+                settings.brightness = display.getBrightness();
+                settings.maxBrightness = display.getMaxBrightness();
+                settings.clockTPS = timer.getTPS();
+                settings.staticColor = display.getStaticColor();
+                strcpy(settings.acitveAnimation, currentAnimation == nullptr ? "" : currentAnimation->getName());
+
+                USB_SERIAL.printf("SAVE SETTINGS struct size: %i\n", sizeof(settings));
+
+                EEPROM.writeBytes(0, (byte*)&settings, sizeof(settings));
+                response["data"] = true;
+                EEPROM.commit();
             } else {
                 // ignore unknown events
                 break;
@@ -156,11 +184,11 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
 
 void setup() {
     USB_SERIAL.begin(115200);
-
+    EEPROM.begin(1024);
     Wire.begin(5, 4);
 
     char debugBuffer[512];
-    sprintf(debugBuffer, "# Compiled with c++ version %s\r\n# Version %s %s at %s", __VERSION__, GIT_COMMIT, __DATE__, __TIME__);
+    sprintf(debugBuffer, "Compiled with c++ version %s\r\n# Version %s %s at %s", __VERSION__, GIT_COMMIT, __DATE__, __TIME__);
     USB_SERIAL.println(debugBuffer);
 
     WiFiManager wifiManager;
@@ -205,6 +233,27 @@ void setup() {
     }
 
     currentAnimation = animations[0];
+
+    USB_SERIAL.println("Load Settings...");
+    SettingsStruct settings = {};
+    EEPROM.readBytes(0, (byte*)&settings, sizeof(settings));
+    if (settings.version == SEETINGS_VERSION) {
+        USB_SERIAL.println("Valid Settings found.");
+
+        // valid settings
+        display.setMaxBrightness(settings.maxBrightness);
+        display.setBrightness(settings.brightness);
+        display.setStaticColor(settings.staticColor);
+        timer.setTPS(settings.clockTPS);
+
+        for (size_t i = 0; i < MAX_ANIMATIONS; i++) {
+            if (animations[i] == nullptr) continue;
+            if (strcmp(settings.acitveAnimation, animations[i]->getName()) != 0) continue;
+            currentAnimation = animations[i];
+            break;
+        }
+    } else
+        USB_SERIAL.println("No Valid Settings found. Skipping...");
 }
 
 void loop() {
