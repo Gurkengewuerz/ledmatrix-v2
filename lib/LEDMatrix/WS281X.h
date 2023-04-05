@@ -1,6 +1,7 @@
 #ifndef LEDMATRIX_WS281X_h
 #define LEDMATRIX_WS281X_h
 #include <NeoPixelBus.h>
+#include <NeoPixelBrightnessBus.h>
 
 class WS281X {
    public:
