@@ -1,6 +1,6 @@
 #include <WS281X.h>
 
-NeoPixelBrightnessBus<NeoGrbFeature, Neo800KbpsMethod> strip((const uint16_t)1024 /* led count */, (const uint8_t)0 /* pin */);
+NeoPixelBusLg<NeoGrbFeature, Neo800KbpsMethod> strip((const uint16_t)1024 /* led count */, (const uint8_t)0 /* pin */);
 
 bool WS281X::init(uint8_t cols, uint8_t rows, uint8_t pin) {
     this->cols = cols;
@@ -15,9 +15,12 @@ bool WS281X::init(uint8_t cols, uint8_t rows, uint8_t pin) {
     // pin is currently hardcoded
     strip.Begin();
 
+    this->staticColor = RgbColor(255, 0, 255);
+
     this->setMaxBrightness(this->maxBrightness);
-    
+
     this->clear(true);
+
     return true;
 }
 
@@ -72,7 +75,7 @@ uint8_t WS281X::getBrightness() {
 void WS281X::setBrightness(uint8_t brightness) {
     this->brightness = brightness;
     float adjustedBrightness = ((float)this->maxBrightness / 255.0f) * ((float)this->brightness / 255.0f);
-    strip.SetBrightness((uint8_t) (adjustedBrightness * 255.0f));
+    strip.SetLuminance((uint8_t)(adjustedBrightness * 255.0f));
     this->update();
 }
 
@@ -96,4 +99,12 @@ uint8_t WS281X::getRows() {
 
 uint8_t WS281X::getCols() {
     return this->cols;
+}
+
+void WS281X::setStaticColor(RgbColor color) {
+    this->staticColor = color;
+}
+
+RgbColor WS281X::getStaticColor() {
+    return this->staticColor;
 }

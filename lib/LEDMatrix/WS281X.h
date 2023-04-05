@@ -1,7 +1,6 @@
 #ifndef LEDMATRIX_WS281X_h
 #define LEDMATRIX_WS281X_h
-#include <NeoPixelBus.h>
-#include <NeoPixelBrightnessBus.h>
+#include <NeoPixelBusLg.h>
 
 class WS281X {
    public:
@@ -9,6 +8,7 @@ class WS281X {
     void setPixel(uint8_t col, uint8_t row, RgbColor color, bool finished);
     RgbColor* getPixel(uint8_t col, uint8_t row);
     void setAllPixel(RgbColor color, bool finished);
+    void setStaticColor(RgbColor color);
     void clear(bool finished);
     void update();
     bool isOccupied(uint8_t col, uint8_t row);
@@ -19,14 +19,16 @@ class WS281X {
     uint16_t pixelCount();
     uint8_t getRows();
     uint8_t getCols();
+    RgbColor getStaticColor();
 
     uint8_t cols = 0;
     uint8_t rows = 0;
 
    private:
     uint16_t count = 0;
-    float brightness = 0.5;
-    float maxBrightness = 1;
+    uint8_t brightness = 127;
+    uint8_t maxBrightness = 255;
     RgbColor** display;
+    RgbColor staticColor;
 };
 #endif

@@ -3,6 +3,7 @@
 #include <AnimationMatrix.h>
 #include <AnimationScanLine.h>
 #include <AnimationSparkle.h>
+#include <AnimationStatic.h>
 #include <AnimationStrobe.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -39,7 +40,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
             USB_SERIAL.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
         } break;
         case WStype_TEXT: {
-            USB_SERIAL.printf("[%u] get Text\n", num);
+            // USB_SERIAL.printf("[%u] get Text\n", num);
 
             DynamicJsonDocument request(1024);
             DeserializationError error = deserializeJson(request, payload);
@@ -66,11 +67,23 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
                     display.setMaxBrightness(maxBrightness);
                 }
 
+                if (requestData.containsKey("color")) {
+                    JsonObject newColor = requestData["color"];
+                    if (newColor.containsKey("r") && newColor.containsKey("g") && newColor.containsKey("b")) {
+                        display.setStaticColor(RgbColor(newColor["r"], newColor["g"], newColor["b"]));
+                    }
+                }
+
                 JsonObject responseData = response.createNestedObject("data");
                 responseData["rows"] = display.getRows();
                 responseData["cols"] = display.getCols();
                 responseData["brightness"] = display.getBrightness();
                 responseData["maxBrightness"] = display.getMaxBrightness();
+
+                JsonObject color = response.createNestedObject("color");
+                color["r"] = display.getStaticColor().R;
+                color["g"] = display.getStaticColor().G;
+                color["b"] = display.getStaticColor().B;
             } else if (type.equals("clock")) {
                 response["event"] = type;
 
@@ -120,13 +133,14 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
                 JsonObject responseData = response.createNestedObject("data");
                 responseData["name"] = currentAnimation == nullptr ? nullptr : currentAnimation->getName();
             } else {
-                response["event"] = "unknown";
+                // ignore unknown events
+                break;
             }
-            USB_SERIAL.println("test");
+
             char json_string[1024];
             serializeJson(response, json_string);
             USB_SERIAL.println(json_string);
-            webSocket.sendTXT(num, json_string);
+            webSocket.broadcastTXT(json_string);
         } break;
         case WStype_BIN:
             USB_SERIAL.printf("[%u] get binary length: %u\n", num, length);
@@ -178,16 +192,19 @@ void setup() {
         animations[i] = nullptr;
     }
     USB_SERIAL.println("Setting animations...");
-    animations[0] = new AnimationGradient();
-    animations[1] = new AnimationMatrix();
-    animations[2] = new AnimationScanLine();
-    animations[3] = new AnimationSparkle();
-    animations[4] = new AnimationStrobe();
+    animations[0] = new AnimationStatic();
+    animations[1] = new AnimationGradient();
+    animations[2] = new AnimationMatrix();
+    animations[3] = new AnimationScanLine();
+    animations[4] = new AnimationSparkle();
+    animations[5] = new AnimationStrobe();
 
     for (size_t i = 0; i < MAX_ANIMATIONS; i++) {
         if (animations[i] == nullptr) continue;
         animations[i]->init(&display);
     }
+
+    currentAnimation = animations[0];
 }
 
 void loop() {
