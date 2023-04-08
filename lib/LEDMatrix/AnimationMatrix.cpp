@@ -3,16 +3,22 @@
 bool AnimationMatrix::update() {
     if (!Animation::update()) return false;
 
+    Serial.println("clear");
     this->display->clear(false);
     bool hasEmpty = false;
 
     for (int16_t col = 0; col <= this->display->getCols(); col++) {
+        Serial.printf("checking %d\n", col);
         MatrixLine matrixLine = this->lines[col];
         if (matrixLine.isValid()) {
+            Serial.println("col is valid");
             // Draw the pixels of the current line
             this->drawLine(col, &matrixLine);
             // Check whether the line is out of the screen and if so, remove it
-            if (matrixLine.finished()) this->lines[col] = MatrixLine();
+            if (matrixLine.finished()) {
+                Serial.println("col is finished");
+                this->lines[col] = MatrixLine();
+            }
         } else
             hasEmpty = true;
     }
@@ -22,6 +28,7 @@ bool AnimationMatrix::update() {
         uint8_t lineCol = random(0, this->display->getCols());
         // If at the random position isn't a line, we add one
         if (!this->lines[lineCol].isValid()) {
+            Serial.printf("creating new line at %d\n", lineCol);
             this->lines[lineCol] = MatrixLine();
             this->lines[lineCol].init(this->display);
             this->drawLine(lineCol, &this->lines[lineCol]);
@@ -36,7 +43,7 @@ bool AnimationMatrix::update() {
 
 void AnimationMatrix::drawLine(uint8_t col, MatrixLine* matrixLine) {
     RgbColor* color = matrixLine->tick();
-    for (int16_t row = 0; row <= this->display->getRows(); row++) {
+    for (int16_t row = 0; row < this->display->getRows(); row++) {
         this->display->setPixel(col + 1, row + 1, color[row], false);
     }
 }
@@ -44,8 +51,7 @@ void AnimationMatrix::drawLine(uint8_t col, MatrixLine* matrixLine) {
 void AnimationMatrix::reset() {
     Animation::reset();
     this->updateEvery = 20;
-    MatrixLine l[this->display->getCols()];
-    this->lines = l;
+    this->lines = new MatrixLine[this->display->getCols()];
 }
 
 const char* AnimationMatrix::getName() {
@@ -69,7 +75,7 @@ void MatrixLine::init(WS281X* display) {
 RgbColor* MatrixLine::tick() {
     this->line = new RgbColor[this->display->getRows()];
 
-    for (int16_t i = 0; i <= this->display->getRows(); i++) {
+    for (int16_t i = 0; i < this->display->getRows(); i++) {
         // Here we skip the empty tiles of the trail
         if (i < this->row - this->length) continue;
         // Then we look out for the fading tiles
