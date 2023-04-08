@@ -10,6 +10,7 @@
 #include <Clock.h>
 #include <EEPROM.h>
 #include <WS281X.h>
+#include <WebServer.h>
 #include <WebSocketsServer.h>
 #include <WiFi.h>
 #include <WiFiManager.h>
@@ -21,6 +22,7 @@
 #define USB_SERIAL Serial
 #define SEETINGS_VERSION 0x69
 
+WebServer server(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
 ACS712 currentSensor(2, 3.3, 4095, 185);  // 0.100 for 20A version. 0.185 for 5A and 0.066 for 30A. Value in Volts per Ampere
 WS281X display;
@@ -182,10 +184,20 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
     }
 }
 
+void handle_OnConnect() {
+    server.sendHeader("Location", String("http://led.mc8051.de/?ip=" + WiFi.localIP().toString() + "%3A81"), true); 
+    server.send(302, "text/plain", "");
+}
+
+void handle_NotFound() {
+    server.send(404, "text/plain", "404 Not found");
+}
+
 void setup() {
     USB_SERIAL.begin(115200);
     EEPROM.begin(1024);
     Wire.begin(5, 4);
+    WiFi.setSleep(false);
 
     char debugBuffer[512];
     sprintf(debugBuffer, "Compiled with c++ version %s\r\n# Version %s %s at %s", __VERSION__, GIT_COMMIT, __DATE__, __TIME__);
@@ -201,6 +213,11 @@ void setup() {
     USB_SERIAL.println("Ready");
     USB_SERIAL.print("IP address: ");
     USB_SERIAL.println(WiFi.localIP());
+
+    USB_SERIAL.println("Starting HTTP Server...");
+    server.on("/", handle_OnConnect);
+    server.onNotFound(handle_NotFound);
+    server.begin();
 
     USB_SERIAL.println("Starting WebSocket...");
     webSocket.begin();
@@ -258,6 +275,7 @@ void setup() {
 
 void loop() {
     webSocket.loop();
+    server.handleClient();
 
     if (timer.update()) {
         if (currentAnimation != nullptr) {
