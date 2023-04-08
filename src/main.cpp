@@ -185,7 +185,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
 }
 
 void handle_OnConnect() {
-    server.sendHeader("Location", String("http://led.mc8051.de/?ip=" + WiFi.localIP().toString() + "%3A81"), true); 
+    server.sendHeader("Location", String("http://led.mc8051.de/?ip=" + WiFi.localIP().toString() + ":81"), true); 
     server.send(302, "text/plain", "");
 }
 
