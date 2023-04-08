@@ -11,6 +11,6 @@ class AnimationGradient : public Animation {
 
    private:
     uint8_t saturation = 255;
-    uint8_t colorPercentage = 0;
+    uint32_t colorPercentage = 0;
 };
 #endif
