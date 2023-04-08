@@ -21,7 +21,7 @@ class WS281X {
     uint8_t getCols();
     uint32_t getStaticColor();
     uint32_t getColor(uint8_t r, uint8_t g, uint8_t b);
-    uint32_t getColorHSV(uint8_t hue, uint8_t saturation, uint8_t value);
+    uint32_t getColorHSV(uint16_t hue, uint8_t saturation, uint8_t value);
 
     uint8_t cols = 0;
     uint8_t rows = 0;

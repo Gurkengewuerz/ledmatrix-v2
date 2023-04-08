@@ -113,6 +113,6 @@ uint32_t WS281X::getColor(uint8_t r, uint8_t g, uint8_t b){
     return strip.Color(r, g, b);
 }
 
-uint32_t WS281X::getColorHSV(uint8_t hue, uint8_t saturation, uint8_t value){
+uint32_t WS281X::getColorHSV(uint16_t hue, uint8_t saturation, uint8_t value){
     return strip.ColorHSV(hue, saturation, value);
 }

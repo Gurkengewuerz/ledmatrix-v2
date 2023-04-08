@@ -4,7 +4,7 @@ bool AnimationSparkle::update() {
     if (!Animation::update()) return false;
     uint8_t row = random(1, this->display->getRows() + 1);
     uint8_t col = random(1, this->display->getCols() + 1);
-    uint8_t hue = random(0, 255);
+    uint16_t hue = random(0, 65535);
 
     this->display->setPixel(col, row, display->getColorHSV(hue, 255, 255), true);
     return true;
