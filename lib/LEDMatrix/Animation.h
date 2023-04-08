@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include <WS281X.h>
-#include <RGBConverter.h>
 
 class Animation {
    public:
