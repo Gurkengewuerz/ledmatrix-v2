@@ -6,10 +6,7 @@ bool AnimationSparkle::update() {
     uint8_t col = random(1, this->display->getCols() + 1);
     uint8_t hue = random(0, 255);
 
-    uint8_t hsv[3];
-    RGBConverter::hsvToRgb((float)hue / 255.0, 1.0, 1.0, hsv);
-    
-    this->display->setPixel(col, row, RgbColor(hsv[0], hsv[1], hsv[2]), true);
+    this->display->setPixel(col, row, display->getColorHSV(hue, 255, 255), true);
     return true;
 }
 

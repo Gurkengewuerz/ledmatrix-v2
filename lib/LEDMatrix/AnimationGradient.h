@@ -10,7 +10,7 @@ class AnimationGradient : public Animation {
     const char* getName();
 
    private:
-    float saturation = 1.0f;
-    float colorPercentage = 0.0f;
+    uint8_t saturation = 255;
+    uint8_t colorPercentage = 0;
 };
 #endif

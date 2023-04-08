@@ -8,7 +8,7 @@ bool AnimationScanLine::update() {
 
     this->display->clear(false);
     
-    RgbColor color = this->display->getStaticColor();
+    uint32_t color = this->display->getStaticColor();
     for (int16_t col = 0; col < this->display->getCols(); col++) {
         this->display->setPixel(col, (middle + 1) - step, color, false);
         this->display->setPixel(col, (this->display->getRows() - middle) + step, color, false);

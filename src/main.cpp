@@ -20,7 +20,7 @@
 #include "gitHeader.h"
 
 #define USB_SERIAL Serial
-#define SEETINGS_VERSION 0x69
+#define SEETINGS_VERSION 0x70
 
 WebServer server(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
@@ -39,7 +39,7 @@ struct SettingsStruct {
     float clockTPS;
     uint8_t brightness;
     uint8_t maxBrightness;
-    RgbColor staticColor;
+    uint32_t staticColor;
 };
 
 const char* settingsPath = "/settings.bin";
@@ -84,7 +84,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
                 if (requestData.containsKey("color")) {
                     JsonObject newColor = requestData["color"];
                     if (newColor.containsKey("r") && newColor.containsKey("g") && newColor.containsKey("b")) {
-                        display.setStaticColor(RgbColor(newColor["r"], newColor["g"], newColor["b"]));
+                        display.setStaticColor(display.getColor(newColor["r"], newColor["g"], newColor["b"]));
                     }
                 }
 
@@ -95,9 +95,9 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
                 responseData["maxBrightness"] = display.getMaxBrightness();
 
                 JsonObject color = response.createNestedObject("color");
-                color["r"] = display.getStaticColor().R;
-                color["g"] = display.getStaticColor().G;
-                color["b"] = display.getStaticColor().B;
+                color["r"] = (display.getStaticColor() >> 16) & 0xFF;
+                color["g"] = (display.getStaticColor() >> 8) & 0xFF;;
+                color["b"] = display.getStaticColor() & 0xFF;
             } else if (type.equals("clock")) {
                 response["event"] = type;
 

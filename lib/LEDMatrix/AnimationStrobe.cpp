@@ -3,7 +3,7 @@
 bool AnimationStrobe::update() {
     if (!Animation::update()) return false;
 
-    RgbColor color = RgbColor(0, 0, 0);
+    uint32_t color = display->getColor(0, 0, 0);
     if (this->strobeStatus) color = this->display->getStaticColor();
     this->strobeStatus = !this->strobeStatus;
 

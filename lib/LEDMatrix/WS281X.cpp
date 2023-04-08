@@ -1,21 +1,21 @@
 #include <WS281X.h>
 
-NeoPixelBusLg<NeoGrbFeature, Neo800KbpsMethod> strip((const uint16_t)1024 /* led count */, (const uint8_t)0 /* pin */);
+Adafruit_NeoPixel strip(800 /* led count */, (const uint8_t)0 /* pin */, NEO_GRB + NEO_KHZ800);
 
 bool WS281X::init(uint8_t cols, uint8_t rows, uint8_t pin) {
     this->cols = cols;
     this->rows = rows;
     this->count = cols * rows;
 
-    this->display = new RgbColor*[this->rows];
+    this->display = new uint32_t*[this->rows];
     for (int row = 0; row < rows; row++) {
-        this->display[row] = new RgbColor[this->cols];
+        this->display[row] = new uint32_t[this->cols];
     }
 
     // pin is currently hardcoded
-    strip.Begin();
+    strip.begin();
 
-    this->staticColor = RgbColor(255, 0, 255);
+    this->staticColor = strip.Color(255, 0, 255);
 
     this->setMaxBrightness(this->maxBrightness);
 
@@ -24,18 +24,18 @@ bool WS281X::init(uint8_t cols, uint8_t rows, uint8_t pin) {
     return true;
 }
 
-void WS281X::setPixel(uint8_t col, uint8_t row, RgbColor color, bool finished = true) {
+void WS281X::setPixel(uint8_t col, uint8_t row, uint32_t color, bool finished = true) {
     if (col > this->cols || row > this->rows) return;
     this->display[row - 1][col - 1] = color;
     if (finished) this->update();
 }
 
-RgbColor* WS281X::getPixel(uint8_t col, uint8_t row) {
+uint32_t* WS281X::getPixel(uint8_t col, uint8_t row) {
     if (col > this->cols || row > this->rows) return 0;
     return &this->display[row - 1][col - 1];
 }
 
-void WS281X::setAllPixel(RgbColor color, bool finished = true) {
+void WS281X::setAllPixel(uint32_t color, bool finished = true) {
     for (int16_t row = 0; row < this->rows; row++) {
         for (int16_t col = 0; col < this->cols; col++) {
             this->display[row][col] = color;
@@ -52,16 +52,16 @@ void WS281X::update() {
     for (uint8_t row = 0; row < this->rows; row++) {
         if (row % 2 == 0) {
             for (int16_t col = 0; col < this->cols; col++) {
-                strip.SetPixelColor((row * this->rows) + col, *this->getPixel(row + 1, col + 1));
+                strip.setPixelColor((row * this->rows) + col, *this->getPixel(row + 1, col + 1));
             }
         } else {
             // reverse every second row
             for (int16_t col = this->cols - 1; col >= 0; col--) {
-                strip.SetPixelColor((row * this->rows) + col, *this->getPixel(row + 1, col + 1));
+                strip.setPixelColor((row * this->rows) + col, *this->getPixel(row + 1, col + 1));
             }
         }
     }
-    strip.Show();
+    strip.show();
 }
 
 bool WS281X::isOccupied(uint8_t col, uint8_t row) {
@@ -75,7 +75,7 @@ uint8_t WS281X::getBrightness() {
 void WS281X::setBrightness(uint8_t brightness) {
     this->brightness = brightness;
     float adjustedBrightness = ((float)this->maxBrightness / 255.0f) * ((float)this->brightness / 255.0f);
-    strip.SetLuminance((uint8_t)(adjustedBrightness * 255.0f));
+    strip.setBrightness((uint8_t)(adjustedBrightness * 255.0f));
     this->update();
 }
 
@@ -101,10 +101,18 @@ uint8_t WS281X::getCols() {
     return this->cols;
 }
 
-void WS281X::setStaticColor(RgbColor color) {
+void WS281X::setStaticColor(uint32_t color) {
     this->staticColor = color;
 }
 
-RgbColor WS281X::getStaticColor() {
+uint32_t WS281X::getStaticColor() {
     return this->staticColor;
+}
+
+uint32_t WS281X::getColor(uint8_t r, uint8_t g, uint8_t b){
+    return strip.Color(r, g, b);
+}
+
+uint32_t WS281X::getColorHSV(uint8_t hue, uint8_t saturation, uint8_t value){
+    return strip.ColorHSV(hue, saturation, value);
 }

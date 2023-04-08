@@ -3,26 +3,25 @@
 bool AnimationGradient::update() {
     if (!Animation::update()) return false;
 
+    const uint8_t colorStep = 1;
+
     for (int16_t row = 1; row <= this->display->getRows(); row++) {
+        uint32_t color = display->getColorHSV(((this->colorPercentage + ((row - 1) * colorStep)) % 255), this->saturation, 255);
         for (int16_t col = 1; col <= this->display->getCols(); col++) {
-            uint8_t hsv[3];
-            RGBConverter::hsvToRgb(this->colorPercentage + (((float)row / (float)this->display->getRows()) * 0.25f), this->saturation, 1.0f, hsv);
-            this->display->setPixel(col, row, RgbColor(hsv[0], hsv[1], hsv[2]), false);
+            this->display->setPixel(col, row, color, false);
         }
     }
 
     this->display->update();
 
-    this->colorPercentage += 0.001;
-    if (this->colorPercentage > 1.0f) this->colorPercentage = 0.0f;
-
+    this->colorPercentage += colorStep;
     return true;
 }
 
 void AnimationGradient::reset() {
     Animation::reset();
     this->updateEvery = 20;
-    this->colorPercentage = 0.0f;
+    this->colorPercentage = 0;
 }
 
 const char* AnimationGradient::getName() {

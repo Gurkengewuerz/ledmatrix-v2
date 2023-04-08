@@ -8,17 +8,17 @@ class MatrixLine {
    public:
     MatrixLine();
     void init(WS281X* display);
-    RgbColor* tick();
+    uint32_t* tick();
     bool finished();
     bool isValid();
 
    private:
-    RgbColor* line;
+    uint32_t* line;
     bool valid = false;
     uint8_t length = 0;
     uint8_t fadingOutTiles = 0;
     uint8_t closeWhiteColor = 0;
-    RgbColor firstTileColor = 0;
+    uint32_t firstTileColor = 0;
     uint8_t row = 0;
     WS281X* display;
 };

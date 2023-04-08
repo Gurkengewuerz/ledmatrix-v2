@@ -42,7 +42,7 @@ bool AnimationMatrix::update() {
 }
 
 void AnimationMatrix::drawLine(uint8_t col, MatrixLine* matrixLine) {
-    RgbColor* color = matrixLine->tick();
+    uint32_t* color = matrixLine->tick();
     for (int16_t row = 0; row < this->display->getRows(); row++) {
         this->display->setPixel(col + 1, row + 1, color[row], false);
     }
@@ -67,13 +67,13 @@ void MatrixLine::init(WS281X* display) {
     this->length = random(5, 15);
     this->fadingOutTiles = random(2, 4);
     this->closeWhiteColor = random(180, 240);
-    this->firstTileColor = RgbColor(this->closeWhiteColor, this->closeWhiteColor, this->closeWhiteColor);
+    this->firstTileColor = display->getColor(this->closeWhiteColor, this->closeWhiteColor, this->closeWhiteColor);
     this->row = 0;
     this->valid = true;
 }
 
-RgbColor* MatrixLine::tick() {
-    this->line = new RgbColor[this->display->getRows()];
+uint32_t* MatrixLine::tick() {
+    this->line = new uint32_t[this->display->getRows()];
 
     for (int16_t i = 0; i < this->display->getRows(); i++) {
         // Here we skip the empty tiles of the trail
@@ -83,11 +83,11 @@ RgbColor* MatrixLine::tick() {
             uint8_t fadingStartPos = this->row - this->length;
             float fadingPos = (float)i - (float)this->fadingOutTiles;
             uint8_t fadingGreen = (uint8_t)(roundf((fadingPos / ((float)this->fadingOutTiles - 1)) * 100) + 75);
-            line[i] = RgbColor(0, fadingGreen, 0);
+            line[i] = display->getColor(0, fadingGreen, 0);
             continue;
         }
         // Next are the fully green painted tiles
-        if (i < this->row) line[i] = RgbColor(0, 255, 0);
+        if (i < this->row) line[i] = display->getColor(0, 255, 0);
         // And at the end we handle the gray / white tile
         if (i == this->row) line[i] = this->firstTileColor;
     }
