@@ -1,22 +1,28 @@
 #include <AnimationMatrix.h>
 
+AnimationMatrix::AnimationMatrix() {
+    this->lines = (MatrixLine*)malloc(this->display->getCols() * sizeof(MatrixLine));
+    this->color = (uint32_t*)malloc(this->display->getRows() * sizeof(uint32_t));
+}
+
+AnimationMatrix::~AnimationMatrix() {
+    free(this->lines);
+    free(this->color);
+}
+
 bool AnimationMatrix::update() {
     if (!Animation::update()) return false;
 
-    Serial.println("clear");
     this->display->clear(false);
     bool hasEmpty = false;
 
-    for (int16_t col = 0; col <= this->display->getCols(); col++) {
-        Serial.printf("checking %d\n", col);
-        MatrixLine matrixLine = this->lines[col];
-        if (matrixLine.isValid()) {
-            Serial.println("col is valid");
+    for (int16_t col = 0; col < this->display->getCols(); col++) {
+        MatrixLine* matrixLine = &this->lines[col];
+        if (matrixLine->isValid()) {
             // Draw the pixels of the current line
-            this->drawLine(col, &matrixLine);
+            this->drawLine(col);
             // Check whether the line is out of the screen and if so, remove it
-            if (matrixLine.finished()) {
-                Serial.println("col is finished");
+            if (matrixLine->finished()) {
                 this->lines[col] = MatrixLine();
             }
         } else
@@ -25,13 +31,12 @@ bool AnimationMatrix::update() {
 
     // Select a random line, save it and draw it
     if (hasEmpty) {
-        uint8_t lineCol = random(0, this->display->getCols());
+        uint8_t lineCol = random(0, this->display->getCols() - 1);
         // If at the random position isn't a line, we add one
         if (!this->lines[lineCol].isValid()) {
-            Serial.printf("creating new line at %d\n", lineCol);
             this->lines[lineCol] = MatrixLine();
             this->lines[lineCol].init(this->display);
-            this->drawLine(lineCol, &this->lines[lineCol]);
+            this->drawLine(lineCol);
         }
     }
 
@@ -41,17 +46,18 @@ bool AnimationMatrix::update() {
     return true;
 }
 
-void AnimationMatrix::drawLine(uint8_t col, MatrixLine* matrixLine) {
-    uint32_t* color = matrixLine->tick();
+void AnimationMatrix::drawLine(uint8_t col) {
+    MatrixLine* matrixLine = &this->lines[col];
+    matrixLine->tick(this->color);
     for (int16_t row = 0; row < this->display->getRows(); row++) {
-        this->display->setPixel(col + 1, row + 1, color[row], false);
+        this->display->setPixel(col + 1, row + 1, this->color[row], false);
     }
 }
 
 void AnimationMatrix::reset() {
     Animation::reset();
-    this->updateEvery = 20;
-    this->lines = new MatrixLine[this->display->getCols()];
+    this->updateEvery = 10;
+    for (int16_t col = 0; col < this->display->getCols(); col++) this->lines[col] = MatrixLine();
 }
 
 const char* AnimationMatrix::getName() {
@@ -72,10 +78,9 @@ void MatrixLine::init(WS281X* display) {
     this->valid = true;
 }
 
-uint32_t* MatrixLine::tick() {
-    this->line = new uint32_t[this->display->getRows()];
-
+void MatrixLine::tick(uint32_t* buf) {
     for (int16_t i = 0; i < this->display->getRows(); i++) {
+        buf[i] = 0;
         // Here we skip the empty tiles of the trail
         if (i < this->row - this->length) continue;
         // Then we look out for the fading tiles
@@ -83,17 +88,16 @@ uint32_t* MatrixLine::tick() {
             uint8_t fadingStartPos = this->row - this->length;
             float fadingPos = (float)i - (float)this->fadingOutTiles;
             uint8_t fadingGreen = (uint8_t)(roundf((fadingPos / ((float)this->fadingOutTiles - 1)) * 100) + 75);
-            line[i] = display->getColor(0, fadingGreen, 0);
+            buf[i] = display->getColor(0, fadingGreen, 0);
             continue;
         }
         // Next are the fully green painted tiles
-        if (i < this->row) line[i] = display->getColor(0, 255, 0);
+        if (i < this->row) buf[i] = display->getColor(0, 255, 0);
         // And at the end we handle the gray / white tile
-        if (i == this->row) line[i] = this->firstTileColor;
+        if (i == this->row) buf[i] = this->firstTileColor;
     }
 
     this->row++;
-    return line;
 }
 
 bool MatrixLine::finished() {

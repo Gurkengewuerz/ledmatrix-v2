@@ -8,12 +8,11 @@ class MatrixLine {
    public:
     MatrixLine();
     void init(WS281X* display);
-    uint32_t* tick();
+    void tick(uint32_t* buf);
     bool finished();
     bool isValid();
 
    private:
-    uint32_t* line;
     bool valid = false;
     uint8_t length = 0;
     uint8_t fadingOutTiles = 0;
@@ -25,14 +24,17 @@ class MatrixLine {
 
 class AnimationMatrix : public Animation {
    public:
+    AnimationMatrix();
+    ~AnimationMatrix();
     bool update();
     void reset();
     const char* getName();
 
    protected:
-    void drawLine(uint8_t col, MatrixLine* matrixLine);
+    void drawLine(uint8_t col);
 
    private:
     MatrixLine* lines;
+    uint32_t* color;
 };
 #endif
