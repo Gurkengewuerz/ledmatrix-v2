@@ -71,7 +71,11 @@
               </div>
             </div>
             <div class="col-sm-12">
-              <button type="button" class="btn btn-light w-100 my-4" id="saveSettings">
+              <button
+                type="button"
+                class="btn btn-light w-100 my-4"
+                id="saveSettings"
+              >
                 Save Settings
               </button>
             </div>
@@ -80,8 +84,17 @@
       </div>
     </div>
     <script>
+      // https://stackoverflow.com/a/47566165/5605489
+      $.urlParam = function (name) {
+        const results = new RegExp("[\?&]" + name + "=([^&#]*)").exec(
+          window.location.search
+        );
+
+        return results !== null ? results[1] || 0 : false;
+      };
+
       $(document).ready(function () {
-        let connection = new WebSocket("ws://192.168.25.166:81");
+        let connection = new WebSocket(`ws://${$.urlParam("ip") || "localhost:81"}`);
         let knownAnimations = [];
 
         connection.onopen = function () {
@@ -98,7 +111,7 @@
                       data: {},
                     })
                   ),
-                50 * index
+                25 * index
               );
             }
           );
