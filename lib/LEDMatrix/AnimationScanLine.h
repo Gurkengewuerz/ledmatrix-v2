@@ -10,6 +10,7 @@ class AnimationScanLine : public Animation {
     const char* getName();
 
    private:
-   uint8_t step = 0;
+   int8_t step = 0;
+   bool direction = true;
 };
 #endif
