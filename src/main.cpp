@@ -2,6 +2,7 @@
 #include <AnimationGradient.h>
 #include <AnimationMatrix.h>
 #include <AnimationScanLine.h>
+#include <AnimationSinus.h>
 #include <AnimationSparkle.h>
 #include <AnimationStatic.h>
 #include <AnimationStrobe.h>
@@ -96,7 +97,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
 
                 JsonObject color = response.createNestedObject("color");
                 color["r"] = (display.getStaticColor() >> 16) & 0xFF;
-                color["g"] = (display.getStaticColor() >> 8) & 0xFF;;
+                color["g"] = (display.getStaticColor() >> 8) & 0xFF;
+                ;
                 color["b"] = display.getStaticColor() & 0xFF;
             } else if (type.equals("clock")) {
                 response["event"] = type;
@@ -185,7 +187,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
 }
 
 void handle_OnConnect() {
-    server.sendHeader("Location", String("http://led.mc8051.de/?ip=" + WiFi.localIP().toString() + ":81"), true); 
+    server.sendHeader("Location", String("http://led.mc8051.de/?ip=" + WiFi.localIP().toString() + ":81"), true);
     server.send(302, "text/plain", "");
 }
 
@@ -243,6 +245,7 @@ void setup() {
     animations[3] = new AnimationScanLine();
     animations[4] = new AnimationSparkle();
     animations[5] = new AnimationStrobe();
+    animations[6] = new AnimationSinus();
 
     for (size_t i = 0; i < MAX_ANIMATIONS; i++) {
         if (animations[i] == nullptr) continue;
