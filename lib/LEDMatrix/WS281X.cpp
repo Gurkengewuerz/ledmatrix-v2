@@ -50,15 +50,9 @@ void WS281X::clear(bool finished = true) {
 
 void WS281X::update() {
     for (uint8_t row = 0; row < this->rows; row++) {
-        if (row % 2 == 0) {
-            for (int16_t col = 0; col < this->cols; col++) {
-                strip.setPixelColor((row * this->rows) + col, *this->getPixel(row + 1, col + 1));
-            }
-        } else {
-            // reverse every second row
-            for (int16_t col = this->cols - 1; col >= 0; col--) {
-                strip.setPixelColor((row * this->rows) + col, *this->getPixel(row + 1, col + 1));
-            }
+        const bool isReversed = row % 2 == 0;
+        for (int16_t col = 0; col < this->cols; col++) {
+            strip.setPixelColor((row * this->rows) + col, *this->getPixel(row + 1, !isReversed ? col + 1 : (this->cols - col)));
         }
     }
     strip.show();
@@ -109,10 +103,10 @@ uint32_t WS281X::getStaticColor() {
     return this->staticColor;
 }
 
-uint32_t WS281X::getColor(uint8_t r, uint8_t g, uint8_t b){
+uint32_t WS281X::getColor(uint8_t r, uint8_t g, uint8_t b) {
     return strip.Color(r, g, b);
 }
 
-uint32_t WS281X::getColorHSV(uint16_t hue, uint8_t saturation, uint8_t value){
+uint32_t WS281X::getColorHSV(uint16_t hue, uint8_t saturation, uint8_t value) {
     return strip.ColorHSV(hue, saturation, value);
 }
