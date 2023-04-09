@@ -1,13 +1,17 @@
 #include <AnimationMatrix.h>
 
 AnimationMatrix::AnimationMatrix() {
-    this->lines = (MatrixLine*)malloc(this->display->getCols() * sizeof(MatrixLine));
-    this->color = (uint32_t*)malloc(this->display->getRows() * sizeof(uint32_t));
 }
 
 AnimationMatrix::~AnimationMatrix() {
-    free(this->lines);
-    free(this->color);
+    if (this->lines != nullptr) free(this->lines);
+    if (this->color != nullptr) free(this->color);
+}
+
+void AnimationMatrix::init(WS281X* display) {
+    this->lines = (MatrixLine*)malloc(display->getCols() * sizeof(MatrixLine));
+    this->color = (uint32_t*)malloc(display->getRows() * sizeof(uint32_t));
+    Animation::init(display);
 }
 
 bool AnimationMatrix::update() {
@@ -57,7 +61,8 @@ void AnimationMatrix::drawLine(uint8_t col) {
 void AnimationMatrix::reset() {
     Animation::reset();
     this->updateEvery = 10;
-    for (int16_t col = 0; col < this->display->getCols(); col++) this->lines[col] = MatrixLine();
+    if (this->lines != nullptr)
+        for (int16_t col = 0; col < this->display->getCols(); col++) this->lines[col] = MatrixLine();
 }
 
 const char* AnimationMatrix::getName() {

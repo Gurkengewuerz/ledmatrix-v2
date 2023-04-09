@@ -26,6 +26,7 @@ class AnimationMatrix : public Animation {
    public:
     AnimationMatrix();
     ~AnimationMatrix();
+    void init(WS281X* display);
     bool update();
     void reset();
     const char* getName();
@@ -34,7 +35,7 @@ class AnimationMatrix : public Animation {
     void drawLine(uint8_t col);
 
    private:
-    MatrixLine* lines;
-    uint32_t* color;
+    MatrixLine* lines = nullptr;
+    uint32_t* color = nullptr;
 };
 #endif
