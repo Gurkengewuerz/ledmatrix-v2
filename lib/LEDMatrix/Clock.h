@@ -1,7 +1,11 @@
 #ifndef LEDMATRIX_CLOCK_h
 #define LEDMATRIX_CLOCK_h
 
+#ifndef SIMULATION
 #include <Arduino.h>
+#else
+#include "simulation/polyfills.h"
+#endif
 
 class Clock {
    public:

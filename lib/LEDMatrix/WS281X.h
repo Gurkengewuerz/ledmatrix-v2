@@ -1,6 +1,12 @@
 #ifndef LEDMATRIX_WS281X_h
 #define LEDMATRIX_WS281X_h
+
+#ifndef SIMULATION
 #include <Adafruit_NeoPixel.h>
+#else
+#include "simulation/polyfills.h"
+#include "simulation/Matrix.h"
+#endif
 
 class WS281X {
    public:
@@ -22,6 +28,7 @@ class WS281X {
     uint32_t getStaticColor();
     uint32_t getColor(uint8_t r, uint8_t g, uint8_t b);
     uint32_t getColorHSV(uint16_t hue, uint8_t saturation, uint8_t value);
+    void enableDebug(bool enable);
 
     uint8_t cols = 0;
     uint8_t rows = 0;

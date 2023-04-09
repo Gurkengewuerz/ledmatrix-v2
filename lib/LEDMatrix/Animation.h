@@ -1,12 +1,15 @@
 #ifndef LEDMATRIX_ANIMATION_h
 #define LEDMATRIX_ANIMATION_h
 
+#ifndef SIMULATION
 #include <Arduino.h>
+#endif
+
 #include <WS281X.h>
 
 class Animation {
    public:
-    void init(WS281X* display);
+    virtual void init(WS281X* display);
     void start();
     void stop();
     virtual void reset();

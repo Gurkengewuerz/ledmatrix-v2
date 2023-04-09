@@ -1,6 +1,10 @@
 #include <WS281X.h>
 
+#ifndef SIMULATION
 Adafruit_NeoPixel strip(800 /* led count */, (const uint8_t)0 /* pin */, NEO_GRB + NEO_KHZ800);
+#else
+Matrix strip(800);
+#endif
 
 bool WS281X::init(uint8_t cols, uint8_t rows, uint8_t pin) {
     this->cols = cols;
@@ -11,6 +15,10 @@ bool WS281X::init(uint8_t cols, uint8_t rows, uint8_t pin) {
     for (int row = 0; row < rows; row++) {
         this->display[row] = new uint32_t[this->cols];
     }
+
+#ifdef SIMULATION
+    strip.setDimensions(rows, cols);
+#endif
 
     // pin is currently hardcoded
     strip.begin();
@@ -109,4 +117,10 @@ uint32_t WS281X::getColor(uint8_t r, uint8_t g, uint8_t b) {
 
 uint32_t WS281X::getColorHSV(uint16_t hue, uint8_t saturation, uint8_t value) {
     return strip.ColorHSV(hue, saturation, value);
+}
+
+void WS281X::enableDebug(bool enable) {
+#ifdef SIMULATION
+    strip.disableDisplay(enable);
+#endif
 }
