@@ -98,7 +98,6 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
                 JsonObject color = response.createNestedObject("color");
                 color["r"] = (display.getStaticColor() >> 16) & 0xFF;
                 color["g"] = (display.getStaticColor() >> 8) & 0xFF;
-                ;
                 color["b"] = display.getStaticColor() & 0xFF;
             } else if (type.equals("clock")) {
                 response["event"] = type;
