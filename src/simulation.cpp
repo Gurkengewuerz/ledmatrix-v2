@@ -96,8 +96,14 @@ int main(int argc, char** argv) {
     ftxui::Component animationsMenu = ftxui::Menu(&animationsEntries, &animationsEntrySelected, &menuOption);
 
     float newTPS = timer.getTPS();
+    long newR = (display.getStaticColor() >> 16) & 0xFF;
+    long newG = (display.getStaticColor() >> 8) & 0xFF;
+    long newB = display.getStaticColor() & 0xFF;
     auto sliders = ftxui::Container::Vertical({
         ftxui::Slider("TPS:", &newTPS, 0.0f, 256.0f, 1.0f),
+        ftxui::Slider("R:", &newR, 0l, 255l, 1l),
+        ftxui::Slider("G:", &newG, 0l, 255l, 1l),
+        ftxui::Slider("B:", &newB, 0l, 255l, 1l),
     });
 
     display.getStrip()->cb = [](ftxui::Elements array) {
@@ -155,6 +161,16 @@ int main(int argc, char** argv) {
             }
         }
         if (timer.getTPS() != newTPS) timer.setTPS(newTPS);
+
+        if (newR != (display.getStaticColor() >> 16) & 0xFF)
+            display.setStaticColor(display.getColor(newR, (display.getStaticColor() >> 8) & 0xFF, display.getStaticColor() & 0xFF));
+
+        if (newG != (display.getStaticColor() >> 8) & 0xFF)
+            display.setStaticColor(display.getColor((display.getStaticColor() >> 16) & 0xFF, newG, display.getStaticColor() & 0xFF));
+
+        if (newB != display.getStaticColor() & 0xFF)
+            display.setStaticColor(display.getColor((display.getStaticColor() >> 16) & 0xFF, (display.getStaticColor() >> 8) & 0xFF, newB));
+
         if (animationsEntrySelected != currentAnimationIndex) {
             display.clear(true);
             currentAnimationIndex = animationsEntrySelected;
