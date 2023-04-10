@@ -15,7 +15,7 @@ void Matrix::begin() {
 }
 
 void Matrix::setDimensions(uint16_t rows, uint16_t cols) {
-    this->screen = Screen::Create(Dimension::Fixed(cols * 2), Dimension::Fixed(rows));
+    this->screen = Screen::Create(Dimension::Full(), Dimension::Full());
     this->rows = rows;
     this->cols = cols;
     screen.Clear();
