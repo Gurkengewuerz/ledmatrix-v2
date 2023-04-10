@@ -21,10 +21,10 @@ void Matrix::setDimensions(uint16_t rows, uint16_t cols) {
 
 void Matrix::show() {
     ftxui::Elements array;
-    for (size_t col = 0; col < this->cols; col++) {
+    for (size_t row = 0; row < this->rows; row++) {
         Elements line;
-        for (size_t row = 0; row < this->rows; row++) {
-            uint32_t color = this->colors[row % 2 == 0 ? row * this->rows + col : (row + 1) * this->rows - 1 - col];
+        for (size_t col = 0; col < this->cols; col++) {
+            uint32_t color = this->colors[row % 2 == 0 ? row * this->cols + col : (row + 1) * this->cols - 1 - col];
             uint8_t r = (color >> 16) & 0xFF;
             uint8_t g = (color >> 8) & 0xFF;
             uint8_t b = color & 0xFF;

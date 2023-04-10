@@ -56,7 +56,7 @@ void WS281X::update() {
     for (uint8_t row = 0; row < this->rows; row++) {
         const bool isReversed = row % 2 == 0;
         for (int16_t col = 0; col < this->cols; col++) {
-            strip.setPixelColor((row * this->rows) + col, *this->getPixel(row + 1, !isReversed ? col + 1 : (this->cols - col)));
+            strip.setPixelColor((row * this->cols) + col, *this->getPixel(!isReversed ? col + 1 : (this->cols - col), row + 1));
         }
     }
     strip.show();
