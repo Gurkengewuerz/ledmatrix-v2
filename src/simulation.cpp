@@ -47,6 +47,12 @@ std::string string_format(const std::string& format, Args... args) {
     return std::string(buf.get(), buf.get() + size - 1);  // We don't want the '\0' inside
 }
 
+ftxui::Elements AddFocusBottom(ftxui::Elements list) {
+    if (list.size() != 0)
+        list.back() = ftxui::focus(std::move(list.back()));
+    return std::move(list);
+}
+
 int main(int argc, char** argv) {
     debugPanel.push_back("Initializing Display...");
     int cols = 25;
@@ -105,42 +111,39 @@ int main(int argc, char** argv) {
 
     auto component = ftxui::Renderer(container, [&] {
         ftxui::Elements children;
-        for (size_t i = std::max(0, (int)debugPanel.size() - 20); i < debugPanel.size(); ++i)
+        for (size_t i = std::max(0, (int)debugPanel.size() - 200); i < debugPanel.size(); ++i)
             children.push_back(ftxui::text(debugPanel[i]));
         std::reverse(children.begin(), children.end());
 
-        return ftxui::vbox({
-                   // -------- Top panel --------------
-                   ftxui::hbox({
-                       // -------- Left Menu --------------
-                       ftxui::vbox({
-                           ftxui::hcenter(ftxui::text("Animations")),
-                           ftxui::separator(),
-                           animationsMenu->Render(),
-                       }),
-                       ftxui::separator(),
-                       // -------- Right Menu --------------
-                       ftxui::vbox({
-                           ftxui::hcenter(ftxui::text("Settings")),
-                           ftxui::separator(),
-                           sliders->Render(),
-                       }) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 25),
-                       ftxui::separator(),
-                       ftxui::vbox({
-                           ftxui::hcenter(ftxui::text("LED Matrix")),
-                           ftxui::separator(),
-                           ftxui::vbox(std::move(ledmatrix)),
-                       }) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 55) |
-                           ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 30),
-                       ftxui::separator(),
-                   }),
-                   ftxui::separator(),
-                   // -------- Bottom panel --------------
-                   ftxui::vbox({
-                       ftxui::vbox(std::move(children)),
-                   }),
-               }) |
-               ftxui::xflex | ftxui::border;
+        return
+            // -------- Top panel --------------
+            ftxui::hbox({
+                // -------- Left Menu --------------
+                ftxui::vbox({
+                    ftxui::hcenter(ftxui::text("Animations")),
+                    ftxui::separator(),
+                    animationsMenu->Render(),
+                }),
+                ftxui::separator(),
+                // -------- Right Menu --------------
+                ftxui::vbox({
+                    ftxui::hcenter(ftxui::text("Settings")),
+                    ftxui::separator(),
+                    sliders->Render(),
+                }) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 25),
+                ftxui::separator(),
+                ftxui::vbox({
+                    ftxui::hcenter(ftxui::text("LED Matrix")),
+                    ftxui::separator(),
+                    ftxui::vbox(std::move(ledmatrix)),
+                }) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 55),
+                ftxui::separator(),
+                ftxui::vbox({
+                    ftxui::filler(),
+                    ftxui::vbox(AddFocusBottom(children)),
+                }),
+            }) |
+            ftxui::xflex | ftxui::border;
     });
 
     ftxui::Loop loop(&screen, component);
