@@ -2,7 +2,7 @@
 
 using namespace ftxui;
 
-Matrix::Matrix(uint16_t pixels) {
+Matrix::Matrix(uint16_t pixels, uint8_t _pin, uint32_t _x) {
     this->colors = (uint32_t*)(malloc(pixels * sizeof(uint32_t)));
 }
 
@@ -15,30 +15,26 @@ void Matrix::begin() {
 }
 
 void Matrix::setDimensions(uint16_t rows, uint16_t cols) {
-    this->screen = Screen::Create(Dimension::Full(), Dimension::Full());
     this->rows = rows;
     this->cols = cols;
-    screen.Clear();
 }
 
 void Matrix::show() {
+    ftxui::Elements array;
     for (size_t col = 0; col < this->cols; col++) {
+        Elements line;
         for (size_t row = 0; row < this->rows; row++) {
             uint32_t color = this->colors[row % 2 == 0 ? row * this->rows + col : (row + 1) * this->rows - 1 - col];
             uint8_t r = (color >> 16) & 0xFF;
             uint8_t g = (color >> 8) & 0xFF;
             uint8_t b = color & 0xFF;
 
-            uint16_t colStart = col * 2;
             auto uiColor = ftxui::Color(r, g, b);
-            for (size_t i = 0; i < 2; i++) {
-                auto& pixel = this->screen.PixelAt(colStart + i, row);
-                pixel.background_color = uiColor;
-            }
+            line.push_back(text("  ") | bgcolor(uiColor));
         }
+        array.push_back(hbox(std::move(line)));
     }
-
-    if (!this->disabled) std::cout << this->screen.ResetPosition() << screen.ToString() << std::flush;
+    if (this->cb != nullptr) this->cb(array);
 }
 
 void Matrix::setBrightness(uint8_t brightness) {
@@ -126,8 +122,4 @@ uint32_t Matrix::ColorHSV(uint16_t hue, uint8_t sat, uint8_t val) {
     return ((((((r * s1) >> 8) + s2) * v1) & 0xff00) << 8) |
            (((((g * s1) >> 8) + s2) * v1) & 0xff00) |
            (((((b * s1) >> 8) + s2) * v1) >> 8);
-}
-
-void Matrix::disableDisplay(bool isDisabled) {
-    this->disabled = isDisabled;
 }

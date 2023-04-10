@@ -9,6 +9,9 @@
 #define degrees(rad) ((rad)*RAD_TO_DEG)
 #define sq(x) ((x) * (x))
 
+#define NEO_GRB 0
+#define NEO_KHZ800 1
+
 typedef __UINT8_TYPE__ uint8_t;
 typedef __INT8_TYPE__ int8_t;
 typedef __UINT16_TYPE__ uint16_t;

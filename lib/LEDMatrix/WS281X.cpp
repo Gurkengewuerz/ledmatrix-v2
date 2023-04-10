@@ -1,10 +1,6 @@
 #include <WS281X.h>
 
-#ifndef SIMULATION
-Adafruit_NeoPixel strip(800 /* led count */, (const uint8_t)0 /* pin */, NEO_GRB + NEO_KHZ800);
-#else
-Matrix strip(800);
-#endif
+STIP_TYPE strip(800 /* led count */, (const uint8_t)0 /* pin */, NEO_GRB + NEO_KHZ800);
 
 bool WS281X::init(uint8_t cols, uint8_t rows, uint8_t pin) {
     this->cols = cols;
@@ -119,8 +115,6 @@ uint32_t WS281X::getColorHSV(uint16_t hue, uint8_t saturation, uint8_t value) {
     return strip.ColorHSV(hue, saturation, value);
 }
 
-void WS281X::enableDebug(bool enable) {
-#ifdef SIMULATION
-    strip.disableDisplay(enable);
-#endif
+STIP_TYPE* WS281X::getStrip() {
+    return &strip;
 }

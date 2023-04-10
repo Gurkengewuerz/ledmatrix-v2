@@ -3,9 +3,11 @@
 
 #ifndef SIMULATION
 #include <Adafruit_NeoPixel.h>
+#define STIP_TYPE Adafruit_NeoPixel
 #else
 #include "simulation/polyfills.h"
 #include "simulation/Matrix.h"
+#define STIP_TYPE Matrix
 #endif
 
 class WS281X {
@@ -28,7 +30,8 @@ class WS281X {
     uint32_t getStaticColor();
     uint32_t getColor(uint8_t r, uint8_t g, uint8_t b);
     uint32_t getColorHSV(uint16_t hue, uint8_t saturation, uint8_t value);
-    void enableDebug(bool enable);
+
+    STIP_TYPE* getStrip();
 
     uint8_t cols = 0;
     uint8_t rows = 0;
