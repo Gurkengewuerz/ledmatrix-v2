@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
                     ftxui::hcenter(ftxui::text("LED Matrix")),
                     ftxui::separator(),
                     ftxui::vbox(std::move(ledmatrix)),
-                }) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 55),
+                }) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, cols * 2),
                 ftxui::separator(),
                 ftxui::vbox({
                     ftxui::filler(),
