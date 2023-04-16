@@ -73,10 +73,19 @@
             <div class="col-sm-12">
               <button
                 type="button"
-                class="btn btn-light w-100 my-4"
+                class="btn btn-secondary w-100 mt-4"
                 id="saveSettings"
               >
                 Save Settings
+              </button>
+            </div>
+            <div class="col-sm-12">
+              <button
+                type="button"
+                class="btn btn-dark w-100 mt-2"
+                id="startConfigPortal"
+              >
+                Start WiFi Config Portal
               </button>
             </div>
           </div>
@@ -219,6 +228,15 @@
           activeConnection?.send(
             JSON.stringify({
               event: "saveSettings",
+              data: {},
+            })
+          );
+        });
+
+        $("#startConfigPortal").on("click", () => {
+          activeConnection?.send(
+            JSON.stringify({
+              event: "startConfigPortal",
               data: {},
             })
           );

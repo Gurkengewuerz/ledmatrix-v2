@@ -23,6 +23,7 @@
 #define USB_SERIAL Serial
 #define SEETINGS_VERSION 0x70
 
+WiFiManager wifiManager;
 WebServer server(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
 ACS712 currentSensor(2, 3.3, 4095, 185);  // 0.100 for 20A version. 0.185 for 5A and 0.066 for 30A. Value in Volts per Ampere
@@ -69,6 +70,9 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length)
             JsonObject requestData = request["data"];
             if (type.equals("ping")) {
                 break;
+            } else if (type.equals("startConfigPortal")) {
+                server.stop();
+                wifiManager.startWebPortal();
             } else if (type.equals("display")) {
                 response["event"] = type;
 
@@ -204,7 +208,6 @@ void setup() {
     sprintf(debugBuffer, "Compiled with c++ version %s\r\n# Version %s %s at %s", __VERSION__, GIT_COMMIT, __DATE__, __TIME__);
     USB_SERIAL.println(debugBuffer);
 
-    WiFiManager wifiManager;
     WiFiManagerParameter config_led_rows("led_rows", "Pixel Rows", "25", 3);
     wifiManager.addParameter(&config_led_rows);
     WiFiManagerParameter config_led_cols("led_cols", "Pixel Columns", "25", 3);
